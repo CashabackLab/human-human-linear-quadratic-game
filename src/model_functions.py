@@ -1,4 +1,7 @@
 import numpy as np
+from scipy.linalg import pinv
+from scipy.integrate import solve_ivp
+from copy import deepcopy
 
 def augment_A_matrix(A,sensory_delay):
     out = np.block([

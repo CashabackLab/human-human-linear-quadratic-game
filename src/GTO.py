@@ -1,9 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.signal import cont2discrete
-from scipy.integrate import solve_ivp
-from scipy.linalg import pinv
-from copy import deepcopy
 import model_functions as mf
 
 class DualModelStructure:
