@@ -4,10 +4,12 @@ import matplotlib as mpl
 wheel = dv.ColorWheel()
 
 
+purples = ["#64256e", "#923aa1", "#c18bcc", "#ecdef0"][::-1]
+
 darken_nums = [3, 1.3, 1.1, 1.1]
-collapsed_condition_colors_light = [wheel.lighten_color(color,darken_num) for darken_num,color in zip(darken_nums,liv_purples)]
+collapsed_condition_colors_light = [wheel.lighten_color(color,darken_num) for darken_num,color in zip(darken_nums,purples)]
 lighten_nums = [2.25,1.,0.85,0.92]
-collapsed_condition_colors_dark = [wheel.lighten_color(color,lighten_num) for lighten_num,color in zip(lighten_nums,liv_purples)]
+collapsed_condition_colors_dark = [wheel.lighten_color(color,lighten_num) for lighten_num,color in zip(lighten_nums,purples)]
 
 partner_color = wheel.lighten_color(wheel.grey,1.4) #wheel.blend_colors(wheel.light_grey, red)
 self_color_light = wheel.dark_grey
