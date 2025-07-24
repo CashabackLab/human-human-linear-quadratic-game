@@ -1,6 +1,6 @@
 import numpy as np
 import copy
-import helper_functions as hf
+import model_functions as mf
 
 # Timesteps
 T = 0.8
@@ -57,7 +57,7 @@ x = -b/m
 y = 1/m
 z = -1/tau
 A = np.block([
-    #rhx #rhvx  #rFx  #rhy  #rhvy #rFy #lhx  #lhvx #lFx  #lhy  #lhvy  #lhFy 
+    #rhx #rhvx  #rFx  #rhy  #rhvy #rFy #lhx  #lhvx #lFx  #lhy  #lhvy  #lmfy 
     [0,    1,    0,   0,    0,    0,     0,   0,    0,    0,     0,    0,   np.zeros(4)],  # How does rhx-position change
     [0,    x,    y,   0,    0,    0,     0,   0,    0,    0,     0,    0,   np.zeros(4)],  # How does rhx-velocity change
     [0,    0,    z,   0,    0,    0,     0,   0,    0,    0,     0,    0,   np.zeros(4)],  # How does rFx change
@@ -142,8 +142,8 @@ p2_observable_states = [
 assert len(p1_observable_states) == len(p2_observable_states)
 
 #* Create observation matrices
-C1 = hf.create_observation_matrix(state_mapping, p1_observable_states)
-C2 = hf.create_observation_matrix(state_mapping, p2_observable_states)
+C1 = mf.create_observation_matrix(state_mapping, p1_observable_states)
+C2 = mf.create_observation_matrix(state_mapping, p2_observable_states)
 
 #* Base Q, for visualization puproses only of the states we care about
 s=1 # should be 0 or 1 for cross term

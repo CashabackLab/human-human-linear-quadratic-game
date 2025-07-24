@@ -3,11 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib as mpl
 import constants as const
 import data_visualization as dv
-import helper_functions as hf
-import polars as pl
-from dyad import Dyad
 import constants as const
-import warnings
 import matplotlib.animation as animation
 
 wheel = dv.ColorWheel()
