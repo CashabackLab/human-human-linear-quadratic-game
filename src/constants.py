@@ -22,6 +22,8 @@ COLLAPSED_PLAYER_RELEVANCY = (
     {"self":"relevant", "partner":"irrelevant"},
     {"self":"relevant", "partner":"relevant"},
 )
+
+model_condition_names = ["both_irrelevant", "p1_irrelevant", "p1_relevant", "both_relevant"]
 collapsed_condition_names = ["Partner Irrelevant\nSelf Irrelevant", "Partner Relevant\nSelf Irrelevant",
                            "Partner Irrelevant\nSelf Relevant", "Partner Relevant\nSelf Relevant"]
 
@@ -37,3 +39,4 @@ model_names_threelines = [
     "Partner\nRepresentation\nEqual Joint Cost",
     "Partner\nRepresentation\nWeighted Joint Cost",
 ]
+
