@@ -6,7 +6,6 @@ from scipy.linalg import pinv
 from copy import deepcopy
 import model_functions as mf
 
-
 class DualModelStructure:
     """
     For Game Theory Optimal controller
@@ -131,9 +130,6 @@ class DualModelStructure:
         # * Internal model covariance
         self.E1 = np.diag(np.eye(self.A.shape[0]) * internal_model_noise_value**2)
         self.E2 = np.diag(np.eye(self.A.shape[0]) * internal_model_noise_value**2)
-
-
-
 
 class GameTheoryLQG:
     def __init__(
@@ -311,140 +307,15 @@ class GameTheoryLQG:
         self_Q[ctx_id, ccx_id] = -np.maximum(np.abs(self_Q[ctx_id, ccx_id]), np.abs(partner_Q[ctx_id, ccx_id] * alpha))
         return self_Q
 
-    def care_about_partner_Q_two_targets(self, self_Q, partner_Q, alpha, player):
-        # Can change this later, but I don't ever want to care about my partner's target more than my own
-        assert alpha <= 0.5
-
-        # TODO Make sure I'm taking on my partner's target, just like in the one target case
-        # TODO I can't be adding both relevant targets, bc that makes Q huge and is overkill and doesn't match the data
-        # TODO I need to put some into the partner Q, take away from other person's Q
-        ccx_id = self.state_mapping["ccx"]
-        ccy_id = self.state_mapping["ccy"]
-        if player == 1:
-            self_target_idx = self.state_mapping["rtx"]  # Care about other person's target
-            self_target_idy = self.state_mapping["rty"]  # Care about other person's target
-            partner_target_idx = self.state_mapping["ltx"]  # Care about other person's target
-            partner_target_idy = self.state_mapping["lty"]  # Care about other person's target
-        else:
-            self_target_idx = self.state_mapping["ltx"]  # Care about other person's target
-            self_target_idy = self.state_mapping["lty"]  # Care about other person's target
-            partner_target_idx = self.state_mapping["rtx"]  # Care about other person's target
-            partner_target_idy = self.state_mapping["rty"]  # Care about other person's target
-
-        # assert self_Q[partner_target_id, partner_target_id] == 0
-        # assert self_Q[ccx_id, partner_target_id] == 0
-        # assert self_Q[partner_target_id, ccx_id] == 0
-
-        # Diagonal center cursor
-        #! THIS WOULD BE AN ERROR... the F_ccx + (-F_rtx) + (-F_ltx) need to add up to ZERO to hit the target
-        #! SINCE THERE ARE 2 targets that would add up, we do NOT want to cut the F_ccx by (1-alpha)...
-        # self_Q[ccx_id,ccx_id] = (1-alpha)*self_Q[ccx_id,ccx_id] # Need to take the proportion off of my Q
-        # self_Q[ccy_id,ccy_id] = (1-alpha)*self_Q[ccy_id,ccy_id] # Need to take the proportion off of my Q
-
-        # Diagonal term
-        self_Q[partner_target_idx, partner_target_idx] = (
-            alpha * self_Q[self_target_idx, self_target_idx]
-        )  # How much of MY Q am I willing to give up for them
-        self_Q[self_target_idx, self_target_idx] = (1 - alpha) * self_Q[
-            self_target_idx, self_target_idx
-        ]  # Need to take the proportion off of my Q
-        # self_Q[partner_target_idy,partner_target_idy] = alpha    * self_Q[self_target_idy,self_target_idy] # How much of MY Q am I willing to give up for them
-        # self_Q[self_target_idy,self_target_idy]       = (1-alpha)* self_Q[self_target_idy,self_target_idy] # Need to take the proportion off of my Q
-
-        # Off Diagonal term
-        self_Q[ccx_id, partner_target_idx] = alpha * self_Q[ccx_id, self_target_idx]
-        self_Q[ccx_id, self_target_idx] = (1 - alpha) * self_Q[ccx_id, self_target_idx]
-
-        # self_Q[ccy_id,partner_target_idy]  = alpha     * self_Q[ccy_id, self_target_idy]
-        # self_Q[ccy_id,self_target_idy]     = (1-alpha) * self_Q[ccy_id, self_target_idy]
-
-        # Off Diagonal Term
-        self_Q[partner_target_idx, ccx_id] = alpha * self_Q[self_target_idx, ccx_id]
-        self_Q[self_target_idx, ccx_id] = (1 - alpha) * self_Q[self_target_idx, ccx_id]
-
-        # self_Q[partner_target_idy, ccy_id] = alpha     * self_Q[self_target_idy, ccy_id]
-        # self_Q[self_target_idy, ccy_id]    = (1-alpha) * self_Q[self_target_idy, ccy_id]
-
-        return self_Q
-
-    def care_about_partner_Q_two_targets_v2(self, Q1, Q2, alpha1, alpha2):
-        """
-        Here, there's two cases
-        1. Q1 = 0 and Q2 = 100
-            - Then you can split Q2 between p1 and p2, proportionally
-            So Q1^alpha[partner_targetx] = (1-alpha)*Q1 + alpha*Q2
-
-        2. Q1 = 100 and Q2 = 100
-            - Then, caring about your partner Q
-
-        """
-        # NOTE the Q matrix is diagonal, so we only need to access the one off-diagonal
-        w1_ccx_rtx = deepcopy(Q1[..., self.state_mapping["ccx"], self.state_mapping["rtx"]])  # p1 self target weighting
-        w2_ccx_ltx = deepcopy(Q2[..., self.state_mapping["ccx"], self.state_mapping["ltx"]])  # p2 self target weighting
-
-        # * P1 caring about their partners target
-        w1_ccx_ltx_alpha = alpha1 * w2_ccx_ltx  # P1 pick up a proportion of their target
-        w2_ccx_ltx_alpha = (1 - alpha1) * w2_ccx_ltx  # P2 can relax a proportion of their target
-
-        # * P2 caring about their partners target
-        w2_ccx_rtx_alpha = alpha2 * w1_ccx_rtx  # P1 pick up a proportion of their target
-        w1_ccx_rtx_alpha = (1 - alpha2) * w1_ccx_rtx  # P2 can relax a proportion of their target
-
-        # * Update Q1
-        # Update ccx and rtx diagonal
-        Q1[..., self.state_mapping["ccx"], self.state_mapping["ccx"]] = -(w1_ccx_rtx_alpha + w1_ccx_ltx_alpha)
-        Q1[..., self.state_mapping["rtx"], self.state_mapping["rtx"]] = -w1_ccx_rtx_alpha
-        Q1[..., self.state_mapping["ltx"], self.state_mapping["ltx"]] = -w1_ccx_ltx_alpha
-        # Update for self target
-        Q1[..., self.state_mapping["ccx"], self.state_mapping["rtx"]] = w1_ccx_rtx_alpha
-        Q1[..., self.state_mapping["rtx"], self.state_mapping["ccx"]] = w1_ccx_rtx_alpha
-        # Help out partner
-        Q1[..., self.state_mapping["ccx"], self.state_mapping["ltx"]] = w1_ccx_ltx_alpha
-        Q1[..., self.state_mapping["ltx"], self.state_mapping["ccx"]] = w1_ccx_ltx_alpha
-
-        # * Update Q2
-        # update ccx and ltx
-        Q2[..., self.state_mapping["ccx"], self.state_mapping["ccx"]] = -(w2_ccx_ltx_alpha + w2_ccx_rtx_alpha)
-        Q2[..., self.state_mapping["ltx"], self.state_mapping["ltx"]] = -w2_ccx_ltx_alpha
-        Q2[..., self.state_mapping["rtx"], self.state_mapping["rtx"]] = -w2_ccx_rtx_alpha
-        # Update for self target
-        Q2[..., self.state_mapping["ccx"], self.state_mapping["ltx"]] = w2_ccx_ltx_alpha
-        Q2[..., self.state_mapping["ltx"], self.state_mapping["ccx"]] = w2_ccx_ltx_alpha
-        # Help out partner
-        Q2[..., self.state_mapping["ccx"], self.state_mapping["rtx"]] = w2_ccx_rtx_alpha
-        Q2[..., self.state_mapping["rtx"], self.state_mapping["ccx"]] = w2_ccx_rtx_alpha
-
-        # * Assertion check to make sure they will hit the arget
-        if True:
-            test = (
-                Q1[..., self.state_mapping["ccx"], self.state_mapping["ccx"]]
-                + Q2[..., self.state_mapping["ccx"], self.state_mapping["ccx"]]
-                + Q1[..., self.state_mapping["rtx"], self.state_mapping["rtx"]]
-                + Q1[..., self.state_mapping["ccx"], self.state_mapping["rtx"]]
-                + Q1[..., self.state_mapping["rtx"], self.state_mapping["ccx"]]
-                + Q2[..., self.state_mapping["rtx"], self.state_mapping["rtx"]]
-                + Q2[..., self.state_mapping["ccx"], self.state_mapping["rtx"]]
-                + Q2[..., self.state_mapping["rtx"], self.state_mapping["ccx"]]
-                + Q1[..., self.state_mapping["ltx"], self.state_mapping["ltx"]]
-                + Q1[..., self.state_mapping["ccx"], self.state_mapping["ltx"]]
-                + Q1[..., self.state_mapping["ltx"], self.state_mapping["ccx"]]
-                + Q2[..., self.state_mapping["ltx"], self.state_mapping["ltx"]]
-                + Q2[..., self.state_mapping["ccx"], self.state_mapping["ltx"]]
-                + Q2[..., self.state_mapping["ltx"], self.state_mapping["ccx"]]
-            )
-            assert np.all(test == 0)
-
-        return Q1, Q2
-
     def add_kalman_filter(self, linear=True):
         """
         linear: True is a linear kalman filter, False is Extended (not done)
         """
         if linear:
-            self.K1, self.P1_post, self.P1_prior = find_kalman_gain(
+            self.K1, self.P1_post, self.P1_prior = mf.find_kalman_gain(
                 Ad=self.MS.Ad_aug, C=self.MS.C1_aug, W=self.MS.W1, V=self.MS.V1_aug, N=self.N
             )
-            self.K2, self.P2_post, self.P2_prior = find_kalman_gain(
+            self.K2, self.P2_post, self.P2_prior = mf.find_kalman_gain(
                 Ad=self.MS.Ad_aug, C=self.MS.C2_aug, W=self.MS.W2, V=self.MS.V2_aug, N=self.N
             )
 
@@ -453,7 +324,7 @@ class GameTheoryLQG:
         method: disc or continuous
         """
         if method == "continuous":
-            out = find_coupled_feedback_gains_continuous(
+            out = mf.find_coupled_feedback_gains_continuous(
                 A=self.MS.A_aug,
                 B1=self.MS.B1_aug,
                 B2=self.MS.B2_aug,
@@ -482,7 +353,7 @@ class GameTheoryLQG:
             ) = out
 
         if method == "discrete":
-            self.P1, self.P1_predict_P2, self.F1, self.F1_predict_F2 = find_coupled_feedback_gains_discrete(
+            self.P1, self.P1_predict_P2, self.F1, self.F1_predict_F2 = mf.find_coupled_feedback_gains_discrete(
                 A=self.MS.Ad_aug,
                 B1=self.MS.B1d_aug,
                 B2=self.MS.B2d_aug,
@@ -495,7 +366,7 @@ class GameTheoryLQG:
                 N=self.N,
                 partner_knowledge=self.partner_knowledge,
             )
-            self.P2, self.P2_predict_P1, self.F2, self.F2_predict_F1 = find_coupled_feedback_gains_discrete(
+            self.P2, self.P2_predict_P1, self.F2, self.F2_predict_F1 = mf.find_coupled_feedback_gains_discrete(
                 A=self.MS.Ad_aug,
                 B1=self.MS.B2d_aug,
                 B2=self.MS.B1d_aug,
@@ -519,7 +390,7 @@ class GameTheoryLQG:
             self.applied_force1,
             self.applied_force2,
             self.jump_step,
-        ) = run_dual_simulation(
+        ) = mf.run_dual_simulation(
             N=self.N,
             h=self.h,
             x0=self.MS.x0_aug,
