@@ -44,7 +44,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "joint_irrelevant": mpl.patches.Rectangle(
             (x_irrel+pert, y_irrel),
             const.irrel_target_width,
-            const.irrel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(self_color, normalize=True),edge_alpha),
             facecolor=(*wheel.hex_to_rgb(self_color, normalize=True),face_alpha),
             lw=0,
@@ -54,7 +54,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "p1_relevant": mpl.patches.Rectangle(
             (x_rel+pert, y_rel),
             const.rel_target_width,
-            const.rel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(self_color, normalize=True),edge_alpha),
             facecolor=(*wheel.hex_to_rgb(self_color, normalize=True),face_alpha),
             lw=border_width,
@@ -65,7 +65,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "p2_relevant": mpl.patches.Rectangle(
             (x_irrel+pert, y_irrel),
             const.irrel_target_width,
-            const.irrel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(self_color, normalize=True),edge_alpha),
             facecolor=(*wheel.hex_to_rgb(self_color, normalize=True),face_alpha),
             lw=border_width,
@@ -75,7 +75,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "joint_relevant": mpl.patches.Rectangle(
             (x_rel+pert, y_rel),
             const.rel_target_width,
-            const.rel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(self_color, normalize=True),edge_alpha),
             facecolor=(*wheel.hex_to_rgb(self_color, normalize=True),face_alpha),
             lw=0,
@@ -87,7 +87,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "joint_irrelevant": mpl.patches.Rectangle(
             (x_irrel+pert-translation, y_irrel),
             const.irrel_target_width,
-            const.irrel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(partner_color, normalize=True),edge_alpha),
             facecolor="none",
             lw=border_width,
@@ -97,7 +97,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "p1_relevant": mpl.patches.Rectangle(
             (x_irrel+pert-translation, y_irrel),
             const.irrel_target_width,
-            const.irrel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(partner_color, normalize=True),edge_alpha),
             facecolor="none",
             lw=border_width,
@@ -107,7 +107,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "p2_relevant": mpl.patches.Rectangle(
             (x_rel+pert-translation, y_rel),
             const.rel_target_width,
-            const.rel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(partner_color, normalize=True),edge_alpha),
             facecolor="none",
             lw=border_width,
@@ -117,7 +117,7 @@ def get_target_patches(ax, self_color=const.self_color, partner_color=const.part
         "joint_relevant": mpl.patches.Rectangle(
             (x_rel+pert-translation, y_rel),
             const.rel_target_width,
-            const.rel_target_height,
+            const.target_height,
             edgecolor=(*wheel.hex_to_rgb(partner_color, normalize=True),edge_alpha),
             facecolor="none",
             lw=border_width,
