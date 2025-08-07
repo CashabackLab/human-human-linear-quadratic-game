@@ -2,6 +2,7 @@ import numpy as np
 from scipy.linalg import pinv
 from scipy.integrate import solve_ivp
 from copy import deepcopy
+import polars as pl 
 
 def augment_A_matrix(A,sensory_delay):
     out = np.block([
@@ -536,3 +537,53 @@ def run_dual_simulation(
         applied_force2,
         jump_step,
     )
+
+class Models:
+    def __init__(self, regular_df:pl.DataFrame, probe_df:pl.DataFrame,
+                 alphas:list[float] = [0.0, 0.0, 1.0, 0.5], 
+                 partner_knowledges:list[bool] = [False, True, True, True]):
+        self.regular_df = regular_df
+        self.probe_df = probe_df.with_columns(pl.col(pl.Float64()).round(3))
+        # self.models = models
+        
+        self.alphas = alphas
+        self.partner_knowledges = partner_knowledges
+        self.max_exp_trial_number = probe_df["experiment_trial_number"].max()
+        self.cropped_probe_df = self._crop_probe_df()
+        
+    def _crop_probe_df(self):
+        before_probe_time = 0.05 # 50ms
+        after_probe_time = 0.4 # 400ms
+        extra_time = 0 # 100ms so that none of the models get cut off and can't vstack below
+        time_from_probe_onset = np.arange(-before_probe_time, after_probe_time+0.01, 0.01).round(2)*1000
+        #* Crop probe df
+        df_list = []
+        for alpha, partner_knowledge in zip(self.alphas, self.partner_knowledges):
+            for i in range(1,self.max_exp_trial_number+1):
+                dff = self.probe_df.filter(
+                    pl.col("alpha") == alpha,
+                    pl.col("partner_knowledge") == partner_knowledge,
+                    pl.col("experiment_trial_number") == i
+                )
+                start_index = np.round(dff["jump_time"][0] - before_probe_time,2) # Need to round so that the is_between works correctly
+                end_index = np.round(dff["jump_time"][0] + after_probe_time + extra_time,2)
+                filt_df = dff.filter(pl.col("timepoint").is_between(start_index, end_index, closed="both"))
+                # assert len(filt_df) == 46 # 50ms before and 400ms after the probe onset
+                #* Add time from probe onset column
+                filt_df = filt_df.with_columns(
+                    time_from_probe_onset=time_from_probe_onset,
+                    p1_applied_force_double = pl.col("p1_applied_force").mul(2)
+                )
+                # if len(filt_df)<47:
+                #     print(alpha, partner_knowledge, i)
+                df_list.append(filt_df)
+        return pl.concat(df_list) 
+    
+    def lateral_deviation(self):
+        pass
+    
+    def involuntary_feedback_response(self):
+        pass
+    
+    def onset_times(self):
+        pass
