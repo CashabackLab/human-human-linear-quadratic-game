@@ -15,6 +15,8 @@ partner_color = wheel.lighten_color(wheel.grey,1.4) #wheel.blend_colors(wheel.li
 self_color_light = wheel.dark_grey
 self_color = wheel.lighten_color(wheel.grey, 0.7) #wheel.blend_colors(wheel.light_grey, wheel.jean_blue)
 
+cc_color = wheel.spearmint
+
 COLLAPSED_PLAYER_RELEVANCY = (
     # Self         Partner
     {"self":"irrelevant", "partner":"irrelevant"},
@@ -39,4 +41,31 @@ model_names_threelines = [
     "Partner\nRepresentation\nEqual Joint Cost",
     "Partner\nRepresentation\nWeighted Joint Cost",
 ]
+target_types = [
+    "joint_irrelevant",
+    "p1_relevant",
+    "p2_relevant",
+    "joint_relevant",
+]
+flipped_target_types = ["joint_irrelevant", "p2_relevant", "p1_relevant", "joint_relevant"]
+PLAYER_RELEVANCY = [
+    # Self         Partner
+    {"p1":"irrelevant", "p2":"irrelevant"},
+    {"p1":"relevant", "p2":"irrelevant"},
+    {"p1":"irrelevant", "p2":"relevant"},
+    {"p1":"relevant", "p2":"relevant"},
+]
+target_types_to_p1_p2_target_type = dict(zip(
+    target_types, 
+    PLAYER_RELEVANCY
+))
 
+target_x = 0.54
+target_y = 0.3
+rel_target_width = 0.01
+irrel_target_width = 0.25
+target_height = 0.01
+rel_target_x_corner = target_x - 0.5*rel_target_width
+rel_target_y_corner = target_y - 0.5*target_height
+irrel_target_x_corner = target_x - 0.5*irrel_target_width
+irrel_target_y_corner = target_y - 0.5*target_height
